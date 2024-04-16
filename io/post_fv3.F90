@@ -2741,7 +2741,7 @@ module post_fv3
                 enddo
               endif
 
-            endif !end gocart_on
+            endif !end gocart_on, d2d_chem
 
             ! inst  cloud top pressure
             if(trim(fieldname)=='prescnvclt') then
@@ -4488,6 +4488,11 @@ module post_fv3
       if(gocart_on .or. gccpp_on .or. nasa_on) then
         dustcb=0.0
         dustallcb=0.0
+        bccb=0.0
+        occb=0.0
+        sulfcb=0.0
+        pp25cb=0.0
+        pp10cb=0.0
         do l=1,lm
           do j=jsta,jend
             do i=ista, iend
@@ -4591,7 +4596,7 @@ module post_fv3
         do j=jsta,jend
           do i=ista,iend
 
-            tv = t(i,j,l) * (h1+d608*MAX(q(I,J,L),qmin))
+            tv = max(t(i,j,l) * (h1+d608*MAX(q(I,J,L),qmin)), 1e-8)
             rhomid(i,j,l) = pmid(i,j,l) / (rd*tv)
 
             dustcb(i,j) = MAX(dustcb(i,j), 0.0)
