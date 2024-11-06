@@ -1608,6 +1608,14 @@ subroutine update_atmos_chemistry(state, rc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
+        call cplFieldGet(state,'vegetation_type', farrayPtr2d=vtype, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'vegetation_type_frac', farrayPtr3d=vegtype_frac, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
       else
 
         call cplFieldGet(state,'inst_liq_nonconv_tendency_levels', &
@@ -1733,6 +1741,8 @@ subroutine update_atmos_chemistry(state, rc)
         !  stype(i,j) = real(int( GFS_Data(nb)%Sfcprop%stype(ix)+0.5 ), kind=ESMF_KIND_R8)
         !endif
         stype = real(int(reshape(GFS_Sfcprop%stype, shape(stype))+0.5), kind=ESMF_KIND_R8)
+        vtype = real(int(reshape(GFS_Sfcprop%vtype, shape(vtype))+0.5), kind=ESMF_KIND_R8)
+        vtype_frac = reshape(GFS_Sfcprop%vtype_frac, shape(vtype_frac))
         if (GFS_Control%isot == 1) then
           where (slmsk == 2) stype = 16._ESMF_KIND_R8
         else
