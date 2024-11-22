@@ -1342,7 +1342,7 @@ subroutine update_atmos_chemistry(state, rc)
   real(ESMF_KIND_R8), dimension(:,:), pointer :: aod, area, canopy, cmm,  &
     dqsfc, dtsfc, fice, flake, focn, fsnow, hpbl, nswsfc, oro, psfc, &
     q2m, rain, rainc, rca, shfsfc, slmsk, stype, swet, t2m, tsfc,    &
-    u10m, uustar, v10m, vfrac, xlai, zorl
+    u10m, uustar, v10m, vfrac, xlai, zorl, vtype, nvegcat, fvtype
 
 ! logical, parameter :: diag = .true.
 
@@ -3344,7 +3344,7 @@ end subroutine update_atmos_chemistry
             !--- Instantaneous quantities
             ! Instantaneous mean layer pressure (Pa)
             case ('inst_pres_levels')
-              call block_data_copy_or_fill(datar83d, GFS_statein%prsl, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)  
+              call block_data_copy_or_fill(datar83d, GFS_statein%prsl, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             ! Instantaneous geopotential at model layer centers (m2 s-2)
             case ('inst_geop_levels')
               call block_data_copy_or_fill(datar83d, GFS_statein%phil, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
@@ -3356,7 +3356,7 @@ end subroutine update_atmos_chemistry
               call block_data_copy_or_fill(datar83d, GFS_statein%vgrs, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             ! Instantaneous surface roughness length (cm)
             case ('inst_surface_roughness')
-              call block_data_copy(datar82d, GFS_sfcprop%zorl, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)            
+              call block_data_copy(datar82d, GFS_sfcprop%zorl, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             ! Instantaneous u wind (m/s) 10 m above ground
             case ('inst_zonal_wind_height10m')
               call block_data_copy(datar82d, GFS_coupling%u10mi_cpl, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
