@@ -26,7 +26,7 @@ module module_cplfields
   !  l : model levels (3D)
   !  s : surface (2D)
   !  t : tracers (4D)
-  integer,          public, parameter :: NexportFields = 121
+  integer,          public, parameter :: NexportFields = 122
   type(ESMF_Field), target, public    :: exportFields(NexportFields)
 
   type(FieldInfo), dimension(NexportFields), public, parameter :: exportFieldsInfo = [ &
@@ -55,6 +55,7 @@ module module_cplfields
     FieldInfo("inst_up_sensi_heat_flx                   ", "s"), &
     FieldInfo("inst_lwe_snow_thickness                  ", "s"), &
     FieldInfo("vegetation_type                          ", "s"), &
+    FieldInfo("vegetation_type_frac                     ", "s"), &
     FieldInfo("inst_vegetation_area_frac                ", "s"), &
     FieldInfo("inst_surface_roughness                   ", "s"), &
     FieldInfo("mean_zonal_moment_flx_atm                ", "s"), &
@@ -267,6 +268,8 @@ module module_cplfields
     "lake_fraction                   ", &
     "ocean_fraction                  ", &
     "surface_snow_area_fraction      ", &
+    "vegetation_type                 ", &
+    "vegetation_type_frac            ", &
     "inst_vegetation_area_frac       ", &
     "canopy_moisture_storage         ", &
     "inst_aerodynamic_conductance    ", &
@@ -443,7 +446,7 @@ module module_cplfields
 
 
   subroutine realizeConnectedCplFields(state, grid, &
-                                       numLevels, numSoilLayers, numTracers, &
+                                       numLevels, numSoilLayers, numVegCat,numTracers, &
                                        fields_info, state_tag, fieldList, fill_value, rc)
 
     use field_manager_mod,  only: MODEL_ATMOS
@@ -454,6 +457,7 @@ module module_cplfields
     type(ESMF_Grid),                intent(in)  :: grid
     integer,                        intent(in)  :: numLevels
     integer,                        intent(in)  :: numSoilLayers
+    integer,                        intent(in)  :: numVegCat
     integer,                        intent(in)  :: numTracers
     type(FieldInfo), dimension(:),  intent(in)  :: fields_info
     character(len=*),               intent(in)  :: state_tag                              !< Import or export.
@@ -528,6 +532,10 @@ module module_cplfields
             end if
           case ('s','surface')
             call ESMF_FieldEmptyComplete(field, typekind=ESMF_TYPEKIND_R8, rc=rc)
+            if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+          case ('v','vegetation')
+            call ESMF_FieldEmptyComplete(field, typekind=ESMF_TYPEKIND_R8, &
+                  ungriddedLBound=(/1/), ungriddedUBound=(/numVegCat/), rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
           case ('g','soil')
             call ESMF_FieldEmptyComplete(field, typekind=ESMF_TYPEKIND_R8, &

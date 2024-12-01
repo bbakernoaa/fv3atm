@@ -1173,9 +1173,9 @@ end subroutine atmos_model_restart
 !  Retrieve ungridded dimensions of atmospheric model arrays
 ! </DESCRIPTION>
 
-subroutine get_atmos_model_ungridded_dim(nlev, nsoillev, ntracers)
+subroutine get_atmos_model_ungridded_dim(nlev, nsoillev, nvegcat, ntracers)
 
-  integer, optional, intent(out) :: nlev, nsoillev, ntracers
+  integer, optional, intent(out) :: nlev, nsoillev, nvegcat,ntracers
 
   !--- number of atmospheric vertical levels
   if (present(nlev)) nlev = Atm_block%npz
@@ -1184,6 +1184,14 @@ subroutine get_atmos_model_ungridded_dim(nlev, nsoillev, ntracers)
   if (present(nsoillev)) then
     nsoillev = 0
     if (associated(GFS_Sfcprop%slc)) nsoillev = size(GFS_Sfcprop%slc, dim=2)
+  end if
+
+  !--- number of soil levels
+  if (present(nvegcat)) then
+    nvegcat = 0
+    if (associated(GFS_Sfcprop%vegtype_frac)) then
+      nvgetcat = size(GFS_Sfcprop%vegtype_frac, dim=2)
+    endif
   end if
 
   !--- total number of atmospheric tracers
@@ -1342,7 +1350,7 @@ subroutine update_atmos_chemistry(state, rc)
   real(ESMF_KIND_R8), dimension(:,:), pointer :: aod, area, canopy, cmm,  &
     dqsfc, dtsfc, fice, flake, focn, fsnow, hpbl, nswsfc, oro, psfc, &
     q2m, rain, rainc, rca, shfsfc, slmsk, stype, swet, t2m, tsfc,    &
-    u10m, uustar, v10m, vfrac, xlai, zorl
+    u10m, uustar, v10m, vfrac, xlai, zorl, vtype, vtype_frac
 
 ! logical, parameter :: diag = .true.
 
@@ -1600,6 +1608,14 @@ subroutine update_atmos_chemistry(state, rc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
+        call cplFieldGet(state,'vegetation_type', farrayPtr2d=vtype, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'vegetation_type_frac', farrayPtr3d=vegtype_frac, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
       else
 
         call cplFieldGet(state,'inst_liq_nonconv_tendency_levels', &
@@ -1725,6 +1741,8 @@ subroutine update_atmos_chemistry(state, rc)
         !  stype(i,j) = real(int( GFS_Data(nb)%Sfcprop%stype(ix)+0.5 ), kind=ESMF_KIND_R8)
         !endif
         stype = real(int(reshape(GFS_Sfcprop%stype, shape(stype))+0.5), kind=ESMF_KIND_R8)
+        vtype = real(int(reshape(GFS_Sfcprop%vtype, shape(vtype))+0.5), kind=ESMF_KIND_R8)
+        vtype_frac = reshape(GFS_Sfcprop%vtype_frac, shape(vtype_frac))
         if (GFS_Control%isot == 1) then
           where (slmsk == 2) stype = 16._ESMF_KIND_R8
         else
@@ -2993,6 +3011,22 @@ end subroutine update_atmos_chemistry
           endif
         endif
 
+        fldname = 'vtype_frac'
+        if (trim(impfield_name) == trim(fldname)) then
+          findex  = queryImportFields(fldname)
+          if (importFieldsValid(findex)) then
+!$omp parallel do default(shared) private(i,j,nb,ix,im)
+            do j=jsc,jec
+              do i=isc,iec
+                nb = Atm_block%blkno(i,j)
+                ix = Atm_block%ixp(i,j)
+                im = GFS_control%chunk_begin(nb)+ix-1
+                GFS_sfcprop%vtype_frac(im,:) = int(datar82d(i-isc+1,j-jsc+1, :))
+              enddo
+            enddo
+          endif
+        endif
+
         fldname = 'stype'
         if (trim(impfield_name) == trim(fldname)) then
           findex  = queryImportFields(fldname)
@@ -3344,7 +3378,7 @@ end subroutine update_atmos_chemistry
             !--- Instantaneous quantities
             ! Instantaneous mean layer pressure (Pa)
             case ('inst_pres_levels')
-              call block_data_copy_or_fill(datar83d, GFS_statein%prsl, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)  
+              call block_data_copy_or_fill(datar83d, GFS_statein%prsl, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             ! Instantaneous geopotential at model layer centers (m2 s-2)
             case ('inst_geop_levels')
               call block_data_copy_or_fill(datar83d, GFS_statein%phil, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
@@ -3356,7 +3390,7 @@ end subroutine update_atmos_chemistry
               call block_data_copy_or_fill(datar83d, GFS_statein%vgrs, zeror8, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             ! Instantaneous surface roughness length (cm)
             case ('inst_surface_roughness')
-              call block_data_copy(datar82d, GFS_sfcprop%zorl, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)            
+              call block_data_copy(datar82d, GFS_sfcprop%zorl, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             ! Instantaneous u wind (m/s) 10 m above ground
             case ('inst_zonal_wind_height10m')
               call block_data_copy(datar82d, GFS_coupling%u10mi_cpl, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
@@ -3578,6 +3612,8 @@ end subroutine update_atmos_chemistry
               call block_data_copy(datar82d, GFS_Sfcprop%tsfco, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             case ('vtype')
               call block_data_copy(datar82d, GFS_Sfcprop%vtype, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
+            case ('vtype_frac')
+              call block_data_copy(datar82d, GFS_Sfcprop%vtype_frac(:,:), Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             case ('stype')
               call block_data_copy(datar82d, GFS_Sfcprop%stype, Atm_block, nb, offset=GFS_Control%chunk_begin(nb), rc=localrc)
             case ('vfrac')
