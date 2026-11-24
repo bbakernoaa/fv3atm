@@ -888,20 +888,31 @@ end subroutine update_atmos_model_dynamics
 subroutine atmos_model_exchange_phase_1 (Atmos, rc)
 
   use ESMF
+  use module_cplfields, only: cplFieldGet
 
   type (atmos_data_type), intent(inout) :: Atmos
   integer, optional,      intent(out)   :: rc
 !--- local variables
   integer :: localrc
+  real(ESMF_KIND_R8), pointer :: qchk(:,:,:,:)
 
     !--- begin
     if (present(rc)) rc = ESMF_SUCCESS
 
     !--- if coupled, exchange coupled fields
     if( GFS_control%cplchm ) then
-      ! -- export fields to chemistry
-      call update_atmos_chemistry('export', rc=localrc)
+      ! The chemistry coupling flags can be set without a chemistry component
+      ! being connected (e.g. CATChem running through CCPP in an ATM-only
+      ! configure). Unconnected fields are not realized, so skip the exchange
+      ! when the tracer coupling field has no data.
+      nullify(qchk)
+      call cplFieldGet('export','inst_tracer_mass_frac', farrayPtr4d=qchk, rc=localrc)
       if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+      if (associated(qchk)) then
+        ! -- export fields to chemistry
+        call update_atmos_chemistry('export', rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+      endif
     endif
 
  end subroutine atmos_model_exchange_phase_1
@@ -915,20 +926,29 @@ subroutine atmos_model_exchange_phase_1 (Atmos, rc)
 subroutine atmos_model_exchange_phase_2 (Atmos, rc)
 
   use ESMF
+  use module_cplfields, only: cplFieldGet
 
   type (atmos_data_type), intent(inout) :: Atmos
   integer, optional,      intent(out)   :: rc
 !--- local variables
   integer :: localrc
+  real(ESMF_KIND_R8), pointer :: qchk(:,:,:,:)
 
     !--- begin
     if (present(rc)) rc = ESMF_SUCCESS
 
     !--- if coupled, exchange coupled fields
     if( GFS_control%cplchm ) then
-      ! -- import fields from chemistry
-      call update_atmos_chemistry('import', rc=localrc)
+      ! Skip the import when no chemistry component is connected (see
+      ! atmos_model_exchange_phase_1).
+      nullify(qchk)
+      call cplFieldGet('import','inst_tracer_mass_frac', farrayPtr4d=qchk, rc=localrc)
       if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+      if (associated(qchk)) then
+        ! -- import fields from chemistry
+        call update_atmos_chemistry('import', rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+      endif
     endif
 
 end subroutine atmos_model_exchange_phase_2

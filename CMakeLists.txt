@@ -80,6 +80,14 @@ set(DYCORE_TARGET_FV3  ufsatm_fv3)
 set(MPI ON)
 add_subdirectory(ccpp)
 
+# Propagate the CATChem CCPP host-module contract to the top-level CMakeLists,
+# which adds the CATChem subdirectory after UFSATM.
+if(CATCHEM_CCPP_ENABLED)
+  set(CATCHEM_CCPP_ENABLED ON PARENT_SCOPE)
+  set(CATCHEM_CCPP_HOST_MODULE_DIR "${CATCHEM_CCPP_HOST_MODULE_DIR}" PARENT_SCOPE)
+  set(CATCHEM_CCPP_HOST_TARGET "${CATCHEM_CCPP_HOST_TARGET}" PARENT_SCOPE)
+endif()
+
 if(CCPP_32BIT)
   add_definitions(-DCCPP_32BIT)
 else()

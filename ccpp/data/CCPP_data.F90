@@ -16,6 +16,8 @@ module CCPP_data
                              GFS_radtend_type,       &
                              GFS_coupling_type,      &
                              GFS_diag_type
+    use machine,       only: kind_phys
+    use iso_c_binding, only: c_int, c_int64_t
 
     implicit none
 
@@ -33,6 +35,21 @@ module CCPP_data
            GFS_coupling,           &
            GFS_intdiag,            &
            GFS_interstitial
+
+    public catchem_context_id,             &
+           catchem_context_generation,     &
+           catchem_interval_id,            &
+           catchem_interval_token,         &
+           catchem_year,                   &
+           catchem_month,                  &
+           catchem_day,                    &
+           catchem_hour,                   &
+           catchem_minute,                 &
+           catchem_second,                 &
+           catchem_day_of_year,            &
+           catchem_duration_seconds,       &
+           catchem_process_subcycle,       &
+           catchem_coupling_site
 
     !-------------------------------------------------------!
     !  GFS data containers;                                 !
@@ -54,5 +71,26 @@ module CCPP_data
     !  CCPP data containers for dynamics (fast physics)    !
     !------------------------------------------------------!
     type(GFDL_interstitial_type),                              save, target :: GFDL_interstitial
+
+    !------------------------------------------------------!
+    !  CATChem CCPP host contract state.                   !
+    !  The context/interval identities are established by  !
+    !  the host (CCPP_driver) before ccpp_register; the    !
+    !  clock fields are refreshed each timestep.           !
+    !------------------------------------------------------!
+    integer(c_int),                        save :: catchem_context_id = 0_c_int
+    integer(c_int64_t),                    save :: catchem_context_generation = 0_c_int64_t
+    integer(c_int64_t),                    save :: catchem_interval_id = 0_c_int64_t
+    integer(c_int64_t),                    save :: catchem_interval_token = 0_c_int64_t
+    integer,                               save :: catchem_year = 2000
+    integer,                               save :: catchem_month = 1
+    integer,                               save :: catchem_day = 1
+    integer,                               save :: catchem_hour = 0
+    integer,                               save :: catchem_minute = 0
+    integer,                               save :: catchem_second = 0
+    integer,                               save :: catchem_day_of_year = 1
+    real(kind_phys),                       save :: catchem_duration_seconds = 3600.0_kind_phys
+    integer(c_int),                        save :: catchem_process_subcycle = 1_c_int
+    character(len=256),                    save :: catchem_coupling_site = ''
 
 end module CCPP_data

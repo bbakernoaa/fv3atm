@@ -2029,6 +2029,10 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: paha   (:)     => null()   !< noah lsm diagnostics
     real (kind=kind_phys), pointer :: tmpmin (:)     => null()   !< min temperature at 2m height (k)
     real (kind=kind_phys), pointer :: tmpmax (:)     => null()   !< max temperature at 2m height (k)
+    real (kind=kind_phys), pointer :: catchem_seasemis (:) => null() !< CATChem sea-salt column mass emission (kg/m2/s)
+    real (kind=kind_phys), pointer :: catchem_seasnum  (:) => null() !< CATChem sea-salt column number emission (1/m2/s)
+    real (kind=kind_phys), pointer :: catchem_wetdep   (:) => null() !< CATChem total aerosol wet removal (kg/m2/s)
+    real (kind=kind_phys), pointer :: catchem_aerodq   (:) => null() !< CATChem net aerosol column mass change (kg/m2/s)
     real (kind=kind_phys), pointer :: dusfc  (:)     => null()   !< u component of surface stress
     real (kind=kind_phys), pointer :: dvsfc  (:)     => null()   !< v component of surface stress
     real (kind=kind_phys), pointer :: dtsfc  (:)     => null()   !< sensible heat flux (w/m2)
@@ -8228,6 +8232,10 @@ module GFS_typedefs
     allocate (Diag%soilm   (IM))
     allocate (Diag%tmpmin  (IM))
     allocate (Diag%tmpmax  (IM))
+    allocate (Diag%catchem_seasemis (IM))
+    allocate (Diag%catchem_seasnum  (IM))
+    allocate (Diag%catchem_wetdep   (IM))
+    allocate (Diag%catchem_aerodq   (IM))
     allocate (Diag%dusfc   (IM))
     allocate (Diag%dvsfc   (IM))
     allocate (Diag%dtsfc   (IM))
@@ -8605,6 +8613,10 @@ module GFS_typedefs
     Diag%soilm      = zero
     Diag%tmpmin     = Model%huge
     Diag%tmpmax     = zero
+    Diag%catchem_seasemis = zero
+    Diag%catchem_seasnum  = zero
+    Diag%catchem_wetdep   = zero
+    Diag%catchem_aerodq   = zero
     Diag%dusfc      = zero
     Diag%dvsfc      = zero
     Diag%dtsfc      = zero

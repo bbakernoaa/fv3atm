@@ -15,6 +15,7 @@ set(PROJECT "CCPP-UFS")
 # SCHEME_FILES
 #------------------------------------------------------------------------------
 set(SCHEME_FILES_DIR "${CMAKE_SOURCE_DIR}/${PARENT_DIR}/ccpp/physics/physics")
+set(CATCHEM_SCHEME_FILES_DIR "${CMAKE_SOURCE_DIR}/CATChem/drivers/ccpp")
 set(SCHEME_METADATA_FILES
   # time-vary
   "${SCHEME_FILES_DIR}/Interstitials/UFS_SCM_NEPTUNE/GFS_rrtmg_setup.meta"
@@ -150,6 +151,37 @@ if (MPAS)
   )
 endif()
 
+# CATChem CCPP process schemes. Enabled when any requested SDF is a CATChem
+# suite (suite_CATChem_*.xml). The scheme metadata and Fortran sources live in
+# the CATChem submodule (drivers/ccpp) and are consumed in place, like any
+# other CCPP scheme directory; the CATChem library itself is wired up by the
+# top-level CMakeLists (CATCHEM_BUILD_CCPP).
+set(CATCHEM_CCPP_ENABLED OFF)
+if(DEFINED CCPP_SUITES AND CCPP_SUITES MATCHES "CATChem")
+  set(CATCHEM_CCPP_ENABLED ON)
+endif()
+if(CATCHEM_CCPP_ENABLED)
+  set(CATCHEM_CCPP_ENABLED ON PARENT_SCOPE)
+  if(NOT EXISTS "${CATCHEM_SCHEME_FILES_DIR}/catchem_ccpp_lifecycle.meta")
+    message(FATAL_ERROR "CATChem CCPP schemes requested but ${CATCHEM_SCHEME_FILES_DIR} "
+                        "is missing. Initialize the CATChem submodule.")
+  endif()
+  # The UFS host calls the CATChem groups from CCPP_driver; compile that
+  # integration path into the host and cap sources.
+  add_definitions(-DCATCHEM_CCPP)
+  list(APPEND SCHEME_METADATA_FILES
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_ccpp_lifecycle.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_apply_tendency.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_dust.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_seasalt.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_wetdep.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_settling.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_drydep.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_so4chem.meta"
+    "${CATCHEM_SCHEME_FILES_DIR}/catchem_carbchem.meta"
+  )
+endif()
+
 # Create list of scheme source files from metadata files
 ccpp_source_files(SCHEME_FORTRAN_FILES ${SCHEME_METADATA_FILES})
 
@@ -274,6 +306,18 @@ ccpp_validator(VERBOSITY ${CCPP_VERBOSITY}
 if(CCPP_32BIT)
   message(STATUS "Compile CCPP slow physics with 32-bit precision")
   set(CCPP_KINDS "kind_phys=REAL32")
+endif()
+
+# CATChem's CCPP drivers use iso_c_binding kinds (c_int, c_int64_t) for the
+# context/interval identity contract. Map them so capgen's generated caps can
+# declare matching temporaries and dummy arguments. kind_phys must keep its
+# existing mapping (REAL64 default or the CCPP_32BIT REAL32 override).
+if(CATCHEM_CCPP_ENABLED)
+  if(CCPP_32BIT)
+    set(CCPP_KINDS "kind_phys=REAL32,c_int=iso_c_binding:c_int,c_int64_t=iso_c_binding:c_int64_t")
+  else()
+    set(CCPP_KINDS "kind_phys=REAL64,c_int=iso_c_binding:c_int,c_int64_t=iso_c_binding:c_int64_t")
+  endif()
 endif()
 
 #------------------------------------------------------------------------------
@@ -546,6 +590,13 @@ target_link_libraries(${CCPP_TARGET} w3emc::w3emc_d)
 
 set_target_properties(${CCPP_TARGET} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
 target_include_directories(${CCPP_TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}>)
+
+# Export the host module directory and target for the CATChem CCPP interface
+# (consumed by the top-level CMakeLists when CATCHEM_CCPP_ENABLED is set).
+if(CATCHEM_CCPP_ENABLED)
+  set(CATCHEM_CCPP_HOST_MODULE_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}" PARENT_SCOPE)
+  set(CATCHEM_CCPP_HOST_TARGET "${CCPP_TARGET}" PARENT_SCOPE)
+endif()
 
 #------------------------------------------------------------------------------
 # Install

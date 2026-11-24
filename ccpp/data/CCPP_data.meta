@@ -78,3 +78,87 @@
   units = DDT
   dimensions = (number_of_threads)
   type = GFS_interstitial_type
+[catchem_context_id]
+  standard_name = catchem_context_id
+  long_name = UFS-owned CATChem context slot
+  units = 1
+  dimensions = ()
+  type = integer | kind = c_int
+[catchem_context_generation]
+  standard_name = catchem_context_generation
+  long_name = UFS-owned CATChem context generation
+  units = 1
+  dimensions = ()
+  type = integer | kind = c_int64_t
+[catchem_interval_id]
+  standard_name = catchem_interval_id
+  long_name = UFS host physics interval identity
+  units = 1
+  dimensions = ()
+  type = integer | kind = c_int64_t
+[catchem_interval_token]
+  standard_name = catchem_interval_token
+  long_name = UFS host physics interval token
+  units = 1
+  dimensions = ()
+  type = integer | kind = c_int64_t
+[catchem_year]
+  standard_name = catchem_year
+  long_name = Current host year for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_month]
+  standard_name = catchem_month
+  long_name = Current host month for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_day]
+  standard_name = catchem_day
+  long_name = Current host day for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_hour]
+  standard_name = catchem_hour
+  long_name = Current host hour for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_minute]
+  standard_name = catchem_minute
+  long_name = Current host minute for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_second]
+  standard_name = catchem_second
+  long_name = Current host second for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_day_of_year]
+  standard_name = catchem_day_of_year
+  long_name = Current host day of year for CATChem's selected interval
+  units = 1
+  dimensions = ()
+  type = integer
+[catchem_duration_seconds]
+  standard_name = catchem_duration_seconds
+  long_name = Duration of the current host interval
+  units = s
+  dimensions = ()
+  type = real | kind = kind_phys
+[catchem_process_subcycle]
+  standard_name = catchem_process_subcycle
+  long_name = CATChem process subcycle phase within the physics timestep
+  units = 1
+  dimensions = ()
+  type = integer | kind = c_int
+[catchem_coupling_site]
+  standard_name = catchem_coupling_site
+  long_name = CATChem host coupling site name
+  units = none
+  dimensions = ()
+  type = character | kind = len=256

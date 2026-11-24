@@ -1069,6 +1069,42 @@ module GFS_diagnostics
 
     idx = idx + 1
     ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'seas_emis'
+    ExtDiag(idx)%desc = 'CATChem sea-salt column mass emission flux'
+    ExtDiag(idx)%unit = 'kg/m2/s'
+    ExtDiag(idx)%mod_name = 'gfs_phys'
+    ExtDiag(idx)%intpl_method = 'bilinear'
+    ExtDiag(idx)%data%var2 => IntDiag%catchem_seasemis(:)
+
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'seas_num_emis'
+    ExtDiag(idx)%desc = 'CATChem sea-salt column number emission flux'
+    ExtDiag(idx)%unit = '1/m2/s'
+    ExtDiag(idx)%mod_name = 'gfs_phys'
+    ExtDiag(idx)%intpl_method = 'bilinear'
+    ExtDiag(idx)%data%var2 => IntDiag%catchem_seasnum(:)
+
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'aero_wetdep'
+    ExtDiag(idx)%desc = 'CATChem total aerosol column wet removal flux'
+    ExtDiag(idx)%unit = 'kg/m2/s'
+    ExtDiag(idx)%mod_name = 'gfs_phys'
+    ExtDiag(idx)%intpl_method = 'bilinear'
+    ExtDiag(idx)%data%var2 => IntDiag%catchem_wetdep(:)
+
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
+    ExtDiag(idx)%name = 'aero_cat_dq'
+    ExtDiag(idx)%desc = 'CATChem net aerosol column mass change rate'
+    ExtDiag(idx)%unit = 'kg/m2/s'
+    ExtDiag(idx)%mod_name = 'gfs_phys'
+    ExtDiag(idx)%intpl_method = 'bilinear'
+    ExtDiag(idx)%data%var2 => IntDiag%catchem_aerodq(:)
+
+    idx = idx + 1
+    ExtDiag(idx)%axes = 2
     ExtDiag(idx)%name = 'dusfc'
     ExtDiag(idx)%desc = 'surface zonal momentum flux'
     ExtDiag(idx)%unit = 'N/m**2'

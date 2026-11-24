@@ -9309,6 +9309,34 @@
   dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
+[catchem_seasemis]
+  standard_name = catchem_seasalt_column_mass_emission_flux
+  long_name = CATChem sea-salt column mass emission flux
+  units = kg m-2 s-1
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[catchem_seasnum]
+  standard_name = catchem_seasalt_column_number_emission_flux
+  long_name = CATChem sea-salt column number emission flux
+  units = m-2 s-1
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[catchem_wetdep]
+  standard_name = catchem_aerosol_column_wet_removal_flux
+  long_name = CATChem total aerosol column wet removal flux
+  units = kg m-2 s-1
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[catchem_aerodq]
+  standard_name = catchem_aerosol_column_mass_change_rate
+  long_name = CATChem net aerosol column mass change rate from all processes
+  units = kg m-2 s-1
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
 [dusfc]
   standard_name = cumulative_surface_x_momentum_flux_for_diag_multiplied_by_timestep
   long_name = cumulative sfc x momentum flux multiplied by timestep
